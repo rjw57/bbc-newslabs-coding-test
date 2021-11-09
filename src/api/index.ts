@@ -1,4 +1,5 @@
 import express from "express";
+import auth from "./middleware/auth";
 import users from "./routes/users";
 import submissions from "./routes/submissions";
 import tokens from "./routes/tokens";
@@ -10,6 +11,9 @@ const port = 8080;
 api.get("/status", (req, res) => {
   res.json({ api: "ok" });
 });
+
+// Use auth middleware to check for users.
+api.use(auth);
 
 // Use JSON middleware to make API JSON handling easier.
 api.use(express.json());
