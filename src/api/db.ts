@@ -14,9 +14,12 @@ interface Submission {
   id: number;
   title: string;
   text: string;
+  location?: string;
   username: string;
   created_at: string;
 }
+
+type NewSubmission = Omit<Submission, "id" | "created_at" | "username">;
 
 interface User {
   username: string;
@@ -100,6 +103,19 @@ export async function userFromToken(token: string) {
     .leftJoin("roles", "roles.id", "=", "users.role_id")
     .where("tokens.token", token);
   return user;
+}
+
+// Create a new submission returning an object matching the return value from
+// getSubmissionsAndUsers.
+export async function createSubmission(
+  user_id: number,
+  submission: NewSubmission
+) {
+  const { title, text, location } = submission;
+  const [id] = await knex
+    .table("submissions")
+    .insert({ title, text, location, user_id });
+  return await getSubmissionAndUser(`${id}`);
 }
 
 // Tear down any open database connections. Usually you will not need to call
