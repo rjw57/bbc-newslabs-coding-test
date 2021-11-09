@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { getSubmissionsAndUsers, getSubmissionAndUser } from "../db";
+import {
+  getSubmissionsAndUsers,
+  getSubmissionAndUser,
+  createSubmission,
+} from "../db";
 import handleError from "../lib/handleError";
+import { handleAuthRequired } from "../middleware/auth";
 
 const router = Router();
 
@@ -54,6 +59,36 @@ router.get("/submissions/:id", async (req, res) => {
   } catch (error) {
     handleError(res, error as Error);
   }
+});
+
+router.post("/submissions", async (req, res) => {
+  // We require authentication.
+  const { user } = res.locals;
+  if (!user) {
+    handleAuthRequired(res);
+    return;
+  }
+
+  // The user must be a member of the public.
+  const { id: userId, description } = user;
+  if (description !== "public") {
+    res.status(403).json({ message: "Forbidden" });
+  }
+
+  // Extract and verify body.
+  const { title, text } = req.body;
+  if (!title || typeof title !== "string") {
+    res.status(400).json({ message: "Bad or missing title" });
+    return;
+  }
+  if (!text || typeof text !== "string") {
+    res.status(400).json({ message: "Bad or missing text" });
+    return;
+  }
+
+  // Create submission.
+  const response = await createSubmission(userId, { title, text });
+  res.status(201).json(response);
 });
 
 export default router;

@@ -187,3 +187,90 @@ describe("GET /submissions/:id", () => {
     });
   });
 });
+
+describe("POST /submissions", () => {
+  afterEach(async () => {
+    // Knex appears to be pretty test unfriendly. Other query builders usually
+    // let one run tests within a dedicated transaction to avoid side-effects.
+    // Knex, it appears, does not: https://github.com/knex/knex/issues/2076.
+    //
+    // As a work around, delete any submission not created in createData.sql.
+    await db.knex.table("submissions").where("id", ">", "3").del();
+  });
+
+  describe("with no user", () => {
+    it("returns 401 unauthorised", async () => {
+      await request(api)
+        .post("/submissions")
+        .send({ title: "Foo", text: "Bar" })
+        .expect(401);
+    });
+  });
+
+  describe("with a member of the public", () => {
+    let token: string | undefined = undefined;
+
+    beforeEach(async () => {
+      token = await db.createToken("Kyra");
+    });
+
+    afterEach(() => {
+      token = undefined;
+    });
+
+    it("the auth token exists", () => {
+      expect(token).toBeDefined();
+    });
+
+    it("allows submissions to be created", async () => {
+      const { body } = await request(api)
+        .post("/submissions")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Foo", text: "Bar" })
+        .expect(201);
+      expect(body.id).toBeDefined();
+      expect(body.title).toBe("Foo");
+      expect(body.text).toBe("Bar");
+    });
+
+    it("requires a title", async () => {
+      await request(api)
+        .post("/submissions")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ text: "Bar" })
+        .expect(400);
+    });
+
+    it("requires text", async () => {
+      await request(api)
+        .post("/submissions")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Bar" })
+        .expect(400);
+    });
+  });
+
+  describe("with a journalist", () => {
+    let token: string | undefined = undefined;
+
+    beforeEach(async () => {
+      token = await db.createToken("John");
+    });
+
+    afterEach(() => {
+      token = undefined;
+    });
+
+    it("the auth token exists", () => {
+      expect(token).toBeDefined();
+    });
+
+    it("submissions cannot be created", async () => {
+      await request(api)
+        .post("/submissions")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Foo", text: "Bar" })
+        .expect(403); // == Forbidden
+    });
+  });
+});

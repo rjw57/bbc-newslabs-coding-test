@@ -2,7 +2,7 @@ import Knex from "knex";
 import path from "path";
 import { randomUUID } from "crypto";
 
-const knex = Knex({
+export const knex = Knex({
   client: "sqlite3",
   connection: {
     filename: path.resolve(__dirname, "../../sql/dev.db"),
