@@ -15,8 +15,8 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <Box sx={{ display: "flex" }}>
           <CssBaseline />
-          {Header}
-          {Navigation}
+          <Header />
+          <Navigation />
           <Switch>
             <Route path="/users">
               <Users />
@@ -24,7 +24,9 @@ const App = () => {
             <Route path="/submissions">
               <Submissions />
             </Route>
-            <Route path="/">{Home}</Route>
+            <Route path="/">
+              <Home />
+            </Route>
           </Switch>
         </Box>
       </ThemeProvider>

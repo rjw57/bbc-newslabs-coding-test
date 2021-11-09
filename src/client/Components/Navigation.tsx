@@ -15,7 +15,7 @@ import {
 
 const drawerWidth = 240;
 
-export const Navigation = (
+export const Navigation = () => (
   <Drawer
     variant="permanent"
     sx={{
