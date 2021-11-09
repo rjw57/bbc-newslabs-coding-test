@@ -4,7 +4,13 @@ A News Labs application prototype to be used during code interviews.
 The idea of this application is to allow the public to submit tips to the BBC in a secure manner and for journalists to manage the incoming tips and react to them.
 
 ## Requirements
-This has been tested using Node.js 16 on macOS 11.
+This has been tested using Node.js 16 on macOS 11 and Debian "bullseye".
+
+On Debian systems, you need to ensure that some packages are installed:
+
+```
+sudo apt-get install sqlite3 python3 python-is-python3 build-essential
+```
 
 ### Before the interview
 - Ensure you have a working Node.js environment
@@ -79,3 +85,32 @@ Note that webpack uses a different tsconfig file than tsc does.
 The `npm pretest` script will execute first, which initialises the development database (in `/sql/dev.db`).
 The `npm test` script runs one command:
 - jest: To run the unit tests for the backend and frontend applications
+
+## Dockerisation
+
+The application can also be launched via
+[docker-compose](https://docs.docker.com/compose/). Ensure that you have
+[installed Docker](https://docs.docker.com/get-docker/) and [installed
+docker-compose](https://docs.docker.com/compose/install/). You can then start
+the application via:
+
+```console
+docker-compose up
+```
+
+Tests can be run via:
+
+```console
+docker-compose run --rm test
+```
+
+### Re-building the container
+
+The containers have the `src/` and `__test__/` directories mounted within them
+on run and so changes in those directories are reflected immediately. If you
+change anything outside of those directories, including installing new
+dependencies, you'll need to re-build the containers:
+
+```console
+docker-compose build app test
+````

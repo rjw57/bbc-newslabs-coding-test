@@ -1,0 +1,5 @@
+dist
+node_modules
+sql/dev.db
+node_modules
+__test__

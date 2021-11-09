@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+
+    ports:
+      - "8080:8080"
+
+    expose:
+      - "8080"
+
+    volumes:
+      # Expose source as a read-only volume to allow for live-reload.
+      - ./src:/usr/src/app/src:ro
+
+  test:
+    build:
+      context: .
+
+    entrypoint: ["npm", "test"]
+
+    # For running tests we also mount the tests within the container.
+    volumes:
+      - ./src:/usr/src/app/src:ro
+      - ./__tests__:/usr/src/app/__tests__:ro
+
+    profiles:
+      - test
