@@ -1,0 +1,22 @@
+name: Run tests
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  test:
+    name: Run test suite
+    runs-on: ubuntu-latest
+
+    steps:
+      # These steps mirror the instructions in the README for building the test
+      # suite container image and running the test suite via docker-compose.
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build docker image for test suite
+        run: docker-compose build test
+      - name: Run tests
+        run: docker-compose run --rm test
