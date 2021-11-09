@@ -28,3 +28,42 @@ describe("GET /users", () => {
     });
   });
 });
+
+describe("GET /users/me", () => {
+  describe("with no user", () => {
+    it("returns the anonymous user", async () => {
+      const { body } = await request(api).get("/users/me").expect(200);
+      expect(body.isAnonymous).toBe(true);
+    });
+  });
+
+  describe("with a member of the public", () => {
+    let token: string | undefined = undefined;
+
+    beforeEach(async () => {
+      token = await db.createToken("Kyra");
+    });
+
+    afterEach(() => {
+      token = undefined;
+    });
+
+    it("the auth token exists", () => {
+      expect(token).toBeDefined();
+    });
+
+    it("returns a user with the correct data", async () => {
+      const { body } = await request(api)
+        .get("/users/me")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+      expect(body).toMatchObject({
+        username: "Kyra",
+        id: 3,
+        description: "public",
+        isAnonymous: false,
+      });
+      expect(body.created_at).toBeDefined();
+    });
+  });
+});

@@ -13,4 +13,10 @@ router.get("/users", async (req, res) => {
   }
 });
 
+// Return the current signed in user or the anonymous user.
+router.get("/users/me", async (req, res) => {
+  const { user } = res.locals;
+  res.json({ ...user, isAnonymous: !user });
+});
+
 export default router;
