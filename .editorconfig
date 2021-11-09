@@ -1,0 +1,17 @@
+root=true
+
+[*.{js,ts,jsx,tsx,json}]
+indent_size=2
+indent_style=space
+
+[*.{yml,yaml}]
+indent_size=2
+indent_style=space
+
+[Dockerfile]
+indent_size=4
+indent_style=space
+
+[*.sql]
+indent_size=2
+indent_style=space
