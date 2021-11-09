@@ -45,3 +45,10 @@ export async function getSubmissionAndUser(id: string): Promise<Submission> {
     .leftJoin('users', 'users.id', '=', 'submissions.user_id')
     .where('submissions.id', id))[0];
 }
+
+// Tear down any open database connections. Usually you will not need to call
+// this function explicitly but it can be useful in, e.g., test suites to ensure
+// that no dangling connections are left open.
+export function tearDownConnection() {
+  knex.destroy();
+}
