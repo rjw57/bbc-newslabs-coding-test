@@ -8,6 +8,7 @@ import { Home } from "./Components/Home";
 import { Submissions } from "./Components/Submissions";
 import { Header } from "./Components/Header";
 import { Navigation } from "./Components/Navigation";
+import AuthTokenProvider from "./providers/AuthTokenProvider";
 import { theme } from "./theme";
 
 const queryClient = new QueryClient();
@@ -17,22 +18,24 @@ const App = () => {
     <Router>
       <ThemeProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
-          <Box sx={{ display: "flex" }}>
-            <CssBaseline />
-            <Header />
-            <Navigation />
-            <Switch>
-              <Route path="/users">
-                <Users />
-              </Route>
-              <Route path="/submissions">
-                <Submissions />
-              </Route>
-              <Route path="/">
-                <Home />
-              </Route>
-            </Switch>
-          </Box>
+          <AuthTokenProvider>
+            <Box sx={{ display: "flex" }}>
+              <CssBaseline />
+              <Header />
+              <Navigation />
+              <Switch>
+                <Route path="/users">
+                  <Users />
+                </Route>
+                <Route path="/submissions">
+                  <Submissions />
+                </Route>
+                <Route path="/">
+                  <Home />
+                </Route>
+              </Switch>
+            </Box>
+          </AuthTokenProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </Router>
