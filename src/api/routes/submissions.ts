@@ -17,6 +17,11 @@ router.get('/submissions/:id', async (req, res) => {
   const submissionId = req.params['id'];
   try {
     const submission = await getSubmissionAndUser(submissionId);
+    if(!submission) {
+      res.status(404).json({ message: "Not Found" });
+      return;
+    }
+
     res.json(submission);
   } catch (error) {
     handleError(res, error as Error);

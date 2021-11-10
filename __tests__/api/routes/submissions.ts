@@ -47,6 +47,12 @@ describe('GET /submissions/:id', () => {
       .expect(200);
   });
 
+  it('returns a 404 Status Code for a non-existant submission', async () => {
+    await request(api)
+      .get('/submissions/100')
+      .expect(404);
+  });
+
   it('returns the requested submission', async () => {
     const { body } = await request(api)
       .get('/submissions/1');
