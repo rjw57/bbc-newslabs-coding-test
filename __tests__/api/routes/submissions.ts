@@ -43,7 +43,7 @@ describe('GET /submissions/:id', () => {
 
   it('returns a 200 Status Code', async () => {
     await request(api)
-      .get('/submissions')
+      .get('/submissions/1')
       .expect(200);
   });
 
