@@ -6,12 +6,21 @@ import { shallow } from "enzyme";
 import { Users } from "../../../src/client/Components/Users";
 
 jest.mock("../../../src/client/hooks/useUsers");
+jest.mock("../../../src/client/hooks/useImpersonation");
 
 const useUsers =
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require("../../../src/client/hooks/useUsers").default;
 
+const useImpersonation =
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require("../../../src/client/hooks/useImpersonation").default;
+
 describe("Users", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
   describe("when users are loading", () => {
     beforeEach(() => {
       useUsers.mockReturnValue({ isLoading: true });
@@ -39,8 +48,11 @@ describe("Users", () => {
       },
     ];
 
+    const impersonationMock = jest.fn();
+
     beforeEach(() => {
       useUsers.mockReturnValue({ isLoading: false, data });
+      useImpersonation.mockReturnValue(impersonationMock);
     });
 
     it("renders each user", () => {
@@ -49,6 +61,18 @@ describe("Users", () => {
         expect(component.text()).toContain(
           `${username}: ${description} (${created_at})`
         );
+      });
+    });
+
+    it("provides a button to impersonate the user", () => {
+      const component = shallow(<Users />);
+      data.forEach(({ username }) => {
+        const button = component.find({
+          "data-impersonation-target": username,
+        });
+        expect(button.text()).toBe("Impersonate");
+        button.simulate("click");
+        expect(impersonationMock).toHaveBeenLastCalledWith(username);
       });
     });
   });
