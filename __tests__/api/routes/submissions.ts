@@ -60,6 +60,42 @@ describe("GET /submissions", () => {
       expect(body.length).toBe(3);
     });
 
+    describe("with some comments", () => {
+      let s1: number, s2: number;
+      beforeEach(async () => {
+        ({ id: s1 } = await db.createSubmission(1, {
+          title: "Sub 1",
+          text: "1",
+        }));
+        ({ id: s2 } = await db.createSubmission(2, {
+          title: "Sub 2",
+          text: "2",
+        }));
+        await db.createComment(s1, { user_id: 3, text: "comment 1" });
+        await db.createComment(s1, { user_id: 2, text: "comment 2" });
+        await db.createComment(s2, { user_id: 1, text: "comment 3" });
+      });
+
+      afterEach(async () => {
+        await db.knex.from("comments").del();
+        await db.knex.from("submissions").where("id", "=", s1).del();
+        await db.knex.from("submissions").where("id", "=", s2).del();
+      });
+
+      it("returns the correct number of comments", async () => {
+        const { body } = await request(api)
+          .get("/submissions")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(200);
+        expect(body.find(({ id }: { id: number }) => id === s1)).toMatchObject({
+          comment_count: 2,
+        });
+        expect(body.find(({ id }: { id: number }) => id === s2)).toMatchObject({
+          comment_count: 1,
+        });
+      });
+    });
+
     describe("with a DB Failure", () => {
       beforeEach(() => {
         jest.spyOn(console, "log").mockImplementation(() => jest.fn());
@@ -289,6 +325,143 @@ describe("POST /submissions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ title: "Foo", text: "Bar" })
         .expect(403); // == Forbidden
+    });
+  });
+});
+
+describe("GET /submissions/:id/comments", () => {
+  let token: string | undefined = undefined;
+  let s1: number, s2: number;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  beforeEach(async () => {
+    token = await db.createToken("John");
+    ({ id: s1 } = await db.createSubmission(1, { title: "Sub 1", text: "1" }));
+    ({ id: s2 } = await db.createSubmission(2, { title: "Sub 2", text: "2" }));
+    await db.createComment(s1, { user_id: 3, text: "comment 1" });
+    await db.createComment(s1, { user_id: 2, text: "comment 2" });
+    await db.createComment(s2, { user_id: 1, text: "comment 3" });
+  });
+
+  afterEach(async () => {
+    token = undefined;
+    await db.knex.from("comments").del();
+    await db.knex.from("submissions").where("id", "=", s1).del();
+    await db.knex.from("submissions").where("id", "=", s2).del();
+  });
+
+  it("returns the comments", async () => {
+    const { body } = await request(api)
+      .get(`/submissions/${s1}/comments`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    expect(body.comments?.length).toBe(2);
+    expect(body.comments).toEqual([
+      expect.objectContaining({
+        text: "comment 1",
+        username: "Kyra",
+        user_id: 3,
+      }),
+      expect.objectContaining({
+        text: "comment 2",
+        username: "Aisha",
+        user_id: 2,
+      }),
+    ]);
+  });
+});
+
+describe("POST /submissions/:id/comments", () => {
+  afterEach(async () => {
+    await db.knex.from("comments").del();
+  });
+
+  describe("with no user", () => {
+    it("returns 401 unauthorised", async () => {
+      await request(api)
+        .post("/submissions/1/comments")
+        .send({ text: "Bar" })
+        .expect(401);
+    });
+  });
+
+  describe("with a member of the public", () => {
+    let token: string | undefined = undefined;
+
+    beforeEach(async () => {
+      token = await db.createToken("Kyra");
+    });
+
+    afterEach(() => {
+      token = undefined;
+    });
+
+    it("the auth token exists", () => {
+      expect(token).toBeDefined();
+    });
+
+    describe("who does not own the submission", () => {
+      const submissionId = 1;
+
+      it("does not allow comments to be created", async () => {
+        await request(api)
+          .post(`/submissions/${submissionId}/comments`)
+          .set("Authorization", `Bearer ${token}`)
+          .send({ text: "Bar" })
+          .expect(403);
+      });
+    });
+
+    describe("who owns the submission", () => {
+      const submissionId = 3;
+
+      it("allows comments to be created", async () => {
+        await request(api)
+          .post(`/submissions/${submissionId}/comments`)
+          .set("Authorization", `Bearer ${token}`)
+          .send({ text: "Bar" })
+          .expect(201);
+      });
+
+      it("requires text", async () => {
+        await request(api)
+          .post(`/submissions/${submissionId}/comments`)
+          .set("Authorization", `Bearer ${token}`)
+          .send({})
+          .expect(400);
+      });
+    });
+  });
+
+  describe("with a journalist", () => {
+    let token: string | undefined = undefined;
+
+    beforeEach(async () => {
+      token = await db.createToken("John");
+    });
+
+    afterEach(() => {
+      token = undefined;
+    });
+
+    it("allows comments to be created", async () => {
+      await request(api)
+        .post(`/submissions/1/comments`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ text: "Bar" })
+        .expect(201);
+    });
+
+    it("returns a 404 for a submission which does not exist", async () => {
+      await request(api)
+        .post(`/submissions/1000/comments`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ text: "Bar" })
+        .expect(404);
     });
   });
 });
