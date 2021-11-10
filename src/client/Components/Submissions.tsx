@@ -19,7 +19,7 @@ export function Submissions() {
     if (!hasDoneInitialFetch) {
       fetchSubmissions();
     }
-  });
+  }, [setSubmissions, setHasDoneInitialFetch, hasDoneInitialFetch]);
 
   function createSubmissionsCard(submission: Submission): JSX.Element {
     return (
