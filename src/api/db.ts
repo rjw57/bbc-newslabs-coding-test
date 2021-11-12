@@ -39,18 +39,22 @@ export async function getUsersAndRoles(): Promise<User[]> {
 // Otherwise all submissions are returned.
 export async function getSubmissionsAndUsers({
   userId,
-}: {
-  userId?: number;
-}): Promise<Submission[]> {
+  includingLocation,
+}: { userId?: number; includingLocation?: boolean } = {}): Promise<
+  Submission[]
+> {
   let query = knex
     .from("submissions")
     .select(
-      "submissions.id",
-      "title",
-      "text",
-      "submissions.created_at",
-      "user_id",
-      "username"
+      ...[
+        "submissions.id",
+        "title",
+        "submissions.text",
+        "submissions.created_at",
+        "submissions.user_id",
+        "username",
+        ...(includingLocation ? ["location"] : []),
+      ]
     )
     .leftJoin("users", "users.id", "=", "submissions.user_id");
   if (userId) {
@@ -59,17 +63,23 @@ export async function getSubmissionsAndUsers({
   return await query;
 }
 
-export async function getSubmissionAndUser(id: string): Promise<Submission> {
+export async function getSubmissionAndUser(
+  id: string,
+  { includingLocation }: { includingLocation?: boolean } = {}
+): Promise<Submission> {
   return (
     await knex
       .from("submissions")
       .select(
-        "submissions.id",
-        "title",
-        "text",
-        "submissions.created_at",
-        "user_id",
-        "username"
+        ...[
+          "submissions.id",
+          "title",
+          "submissions.text",
+          "submissions.created_at",
+          "submissions.user_id",
+          "username",
+          ...(includingLocation ? ["location"] : []),
+        ]
       )
       .leftJoin("users", "users.id", "=", "submissions.user_id")
       .where("submissions.id", id)
