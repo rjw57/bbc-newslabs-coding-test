@@ -35,8 +35,14 @@ export async function getUsersAndRoles(): Promise<User[]> {
     .leftJoin("roles", "roles.id", "=", "users.role_id");
 }
 
-export async function getSubmissionsAndUsers(): Promise<Submission[]> {
-  return await knex
+// If userId is defined, only submissions from the passed user are returned.
+// Otherwise all submissions are returned.
+export async function getSubmissionsAndUsers({
+  userId,
+}: {
+  userId?: number;
+}): Promise<Submission[]> {
+  let query = knex
     .from("submissions")
     .select(
       "submissions.id",
@@ -47,6 +53,10 @@ export async function getSubmissionsAndUsers(): Promise<Submission[]> {
       "username"
     )
     .leftJoin("users", "users.id", "=", "submissions.user_id");
+  if (userId) {
+    query = query.where("users.id", "=", userId);
+  }
+  return await query;
 }
 
 export async function getSubmissionAndUser(id: string): Promise<Submission> {
