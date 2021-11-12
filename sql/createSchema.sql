@@ -1,3 +1,5 @@
+DROP INDEX IF EXISTS comments_submission_id_created_at_idx;
+DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS submissions;
@@ -32,3 +34,16 @@ CREATE TABLE tokens (
   created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(user_id) REFERENCES user(id)
 );
+
+CREATE TABLE comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text TEXT NOT NULL,
+  user_id INTEGER NOT NULL,
+  submission_id INTEGER NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id),
+  FOREIGN KEY(submission_id) REFERENCES submissions(id)
+);
+
+CREATE INDEX comments_submission_id_created_at_idx
+  ON comments(submission_id, created_at);

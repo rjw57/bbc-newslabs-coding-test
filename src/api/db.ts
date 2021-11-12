@@ -10,23 +10,37 @@ const knex = Knex({
   useNullAsDefault: true,
 });
 
-interface Submission {
+export interface Submission {
   id: number;
   title: string;
   text: string;
   location?: string;
   username: string;
+  comment_count: number;
   created_at: string;
 }
 
-type NewSubmission = Omit<Submission, "id" | "created_at" | "username">;
+type NewSubmission = Omit<
+  Submission,
+  "id" | "created_at" | "username" | "comment_count"
+>;
 
-interface User {
+export interface User {
   username: string;
   id: number;
   description: string;
   created_at: string;
 }
+
+interface Comment {
+  id: string;
+  user_id: number;
+  username: string;
+  text: string;
+  created_at: string;
+}
+
+type NewComment = Omit<Comment, "id" | "username" | "created_at">;
 
 export async function getUsersAndRoles(): Promise<User[]> {
   return await knex
@@ -53,10 +67,13 @@ export async function getSubmissionsAndUsers({
         "submissions.created_at",
         "submissions.user_id",
         "username",
+        knex.count("comments.id").as("comment_count"),
         ...(includingLocation ? ["location"] : []),
       ]
     )
-    .leftJoin("users", "users.id", "=", "submissions.user_id");
+    .leftJoin("users", "users.id", "=", "submissions.user_id")
+    .leftJoin("comments", "comments.submission_id", "=", "submissions.id")
+    .groupBy("submissions.id");
   if (userId) {
     query = query.where("users.id", "=", userId);
   }
@@ -84,6 +101,22 @@ export async function getSubmissionAndUser(
       .leftJoin("users", "users.id", "=", "submissions.user_id")
       .where("submissions.id", id)
   )[0];
+}
+
+export async function getSubmissionComments(id: number): Promise<Comment[]> {
+  return await knex
+    .from("comments")
+    .select("comments.id", "text", "comments.created_at", "user_id", "username")
+    .leftJoin("users", "users.id", "=", "comments.user_id")
+    .where("submission_id", "=", id)
+    .orderBy("comments.created_at", "asc");
+}
+
+export async function createComment(
+  submission_id: number,
+  comment: NewComment
+) {
+  return await knex.table("comments").insert({ submission_id, ...comment });
 }
 
 // Create a new token for the user with the passed username. Returns undefined
