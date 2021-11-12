@@ -3,6 +3,7 @@ export interface Submission {
   title: string;
   text: string;
   username: string;
+  location?: string;
   created_at: string;
 }
 
