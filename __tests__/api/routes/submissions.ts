@@ -116,6 +116,15 @@ describe("GET /submissions/:id", () => {
       expect(body.id).toBe(1);
     });
 
+    it("redacts the location", async () => {
+      const { body } = await request(api)
+        .get("/submissions/1")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+
+      expect(body.location).not.toBeDefined();
+    });
+
     describe("with a DB Failure", () => {
       beforeEach(() => {
         jest.spyOn(console, "log").mockImplementation(() => jest.fn());
@@ -168,6 +177,15 @@ describe("GET /submissions/:id", () => {
         .get("/submissions/1")
         .set("Authorization", `Bearer ${token}`)
         .expect(200);
+    });
+
+    it("returns the location", async () => {
+      const { body } = await request(api)
+        .get("/submissions/1")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+
+      expect(body.location).toBeDefined();
     });
 
     it("returns a 404 Status Code for a non-existant submission", async () => {

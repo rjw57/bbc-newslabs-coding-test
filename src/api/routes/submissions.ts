@@ -6,6 +6,7 @@ import {
 } from "../db";
 import handleError from "../lib/handleError";
 import { handleAuthRequired } from "../middleware/auth";
+import locateIP from "../locateIP";
 
 const router = Router();
 
@@ -19,9 +20,10 @@ router.get("/submissions", async (req, res) => {
 
   const { description, id: userId } = user;
   try {
-    // journalists get all submissions
+    // journalists get all submissions and their locations
     const submission = await getSubmissionsAndUsers({
       userId: description === "journalist" ? undefined : userId,
+      includingLocation: description === "journalist",
     });
     res.json(submission);
   } catch (error) {
@@ -36,11 +38,15 @@ router.get("/submissions/:id", async (req, res) => {
     handleAuthRequired(res);
     return;
   }
+  const { description } = user;
 
   const { description, username } = user;
   const submissionId = req.params["id"];
   try {
-    const submission = await getSubmissionAndUser(submissionId);
+    const submission = await getSubmissionAndUser(submissionId, {
+      // Journalists get location.
+      includingLocation: description === "journalist",
+    });
     if (!submission) {
       res.status(404).json({ message: "Not Found" });
       return;
@@ -86,8 +92,11 @@ router.post("/submissions", async (req, res) => {
     return;
   }
 
+  // Convert IP to location using GeoIP service.
+  const location = locateIP(req.ip);
+
   // Create submission.
-  const response = await createSubmission(userId, { title, text });
+  const response = await createSubmission(userId, { title, text, location });
   res.status(201).json(response);
 });
 
