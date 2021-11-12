@@ -1,26 +1,18 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Box, Grid, Toolbar, Typography } from "@mui/material";
 import { Submission } from "../model";
 import SubmissionCard from "./SubmissionCard";
+import useAuthenticatedUser from "../hooks/useAuthenticatedUser";
+import useSubmissions from "../hooks/useSubmissions";
 
 export function Submissions() {
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [hasDoneInitialFetch, setHasDoneInitialFetch] =
-    useState<boolean>(false);
+  const { data: user } = useAuthenticatedUser();
+  const { error, data: submissions, isLoading } = useSubmissions();
 
+  // Log any errors which occur when fetching.
   useEffect(() => {
-    async function fetchSubmissions() {
-      const res = await fetch("/api/submissions");
-      const submissionData = await res.json();
-
-      setSubmissions(submissionData);
-      setHasDoneInitialFetch(true);
-    }
-    if (!hasDoneInitialFetch) {
-      fetchSubmissions();
-    }
-  }, [setSubmissions, setHasDoneInitialFetch, hasDoneInitialFetch]);
+    error && console.error(error);
+  }, [error]);
 
   function createSubmissionsCard(submission: Submission): JSX.Element {
     return (
@@ -32,12 +24,16 @@ export function Submissions() {
 
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-      <Toolbar />
+      {(!user || user.isAnonymous) && (
+        <Typography sx={{ color: "error.main" }}>
+          Sign in to view submissions.
+        </Typography>
+      )}
       <Grid container spacing={3}>
-        {hasDoneInitialFetch ? (
-          submissions.map(createSubmissionsCard)
-        ) : (
+        {isLoading ? (
           <Typography>LOADING</Typography>
+        ) : (
+          (submissions || []).map(createSubmissionsCard)
         )}
       </Grid>
     </Box>
