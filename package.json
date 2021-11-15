@@ -7,9 +7,11 @@
     "build": "rm -rf dist && webpack && tsc",
     "start": "ts-node ./src/server.ts",
     "test": "jest",
-    "posttest": "npm run lint",
+    "posttest": "npm run lint && npm run prettier",
     "lint": "eslint \"**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"**/*.{ts,tsx}\" --fix",
+    "prettier": "prettier --check \"**/*.{ts,tsx}\"",
+    "prettier:fix": "prettier --fix \"**/*.{ts,tsx}\"",
     "pretest": "npm run setup:db",
     "prestart": "npm run setup:db",
     "setup:db": "sqlite3 ./sql/dev.db < ./sql/createSchema.sql && sqlite3 ./sql/dev.db < ./sql/createData.sql"
