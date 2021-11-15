@@ -1,6 +1,6 @@
-import { configure } from 'enzyme';
-import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
-import { tearDownConnection } from './src/api/db';
+import { configure } from "enzyme";
+import Adapter from "@wojtekmaj/enzyme-adapter-react-17";
+import { tearDownConnection } from "./src/api/db";
 
 configure({ adapter: new Adapter() });
 

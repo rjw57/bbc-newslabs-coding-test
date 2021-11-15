@@ -1,16 +1,17 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-import { Box, Grid, Toolbar, Typography } from '@mui/material';
-import { Submission } from '../model';
-import SubmissionCard from './SubmissionCard';
+import * as React from "react";
+import { useEffect, useState } from "react";
+import { Box, Grid, Toolbar, Typography } from "@mui/material";
+import { Submission } from "../model";
+import SubmissionCard from "./SubmissionCard";
 
 export function Submissions() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [hasDoneInitialFetch, setHasDoneInitialFetch] = useState<boolean>(false);
+  const [hasDoneInitialFetch, setHasDoneInitialFetch] =
+    useState<boolean>(false);
 
   useEffect(() => {
     async function fetchSubmissions() {
-      const res = await fetch('/api/submissions');
+      const res = await fetch("/api/submissions");
       const submissionData = await res.json();
 
       setSubmissions(submissionData);
@@ -33,10 +34,11 @@ export function Submissions() {
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <Toolbar />
       <Grid container spacing={3}>
-        {hasDoneInitialFetch
-          ? submissions.map(createSubmissionsCard)
-          : <Typography>LOADING</Typography>
-        }
+        {hasDoneInitialFetch ? (
+          submissions.map(createSubmissionsCard)
+        ) : (
+          <Typography>LOADING</Typography>
+        )}
       </Grid>
     </Box>
   );

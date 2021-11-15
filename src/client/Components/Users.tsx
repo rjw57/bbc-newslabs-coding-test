@@ -1,15 +1,16 @@
-import * as React from 'react';
-import { Box, Toolbar, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { User } from '../model';
+import * as React from "react";
+import { Box, Toolbar, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { User } from "../model";
 
 export function Users() {
   const [users, setUsers] = useState<User[]>([]);
-  const [hasDoneInitialFetch, setHasDoneInitialFetch] = useState<boolean>(false);
+  const [hasDoneInitialFetch, setHasDoneInitialFetch] =
+    useState<boolean>(false);
 
   useEffect(() => {
     async function fetchUsers() {
-      const res = await fetch('/api/users');
+      const res = await fetch("/api/users");
       const userData = await res.json();
 
       setUsers(userData);
@@ -23,16 +24,17 @@ export function Users() {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <Toolbar />
-      {hasDoneInitialFetch
-        ? users.map(user => {
+      {hasDoneInitialFetch ? (
+        users.map((user) => {
           return (
             <Typography paragraph key={"user-" + user.id}>
               {user.username}: {user.description} ({user.created_at})
             </Typography>
           );
         })
-        : <Typography>LOADING</Typography>
-      }
+      ) : (
+        <Typography>LOADING</Typography>
+      )}
     </Box>
   );
 }

@@ -7,8 +7,8 @@ export interface Submission {
 }
 
 export interface User {
-  username: string,
-  id: number,
-  description: string,
-  created_at: string
+  username: string;
+  id: number;
+  description: string;
+  created_at: string;
 }
